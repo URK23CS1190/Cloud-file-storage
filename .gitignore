@@ -1,3 +1,12 @@
 node_modules
 .env
 dist
+
+
+# amplify
+node_modules
+.amplify
+amplify_outputs*
+amplifyconfiguration*
+.env
+backend/.env

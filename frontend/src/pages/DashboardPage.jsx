@@ -1,8 +1,7 @@
-import React from "react";
-import { useEffect, useState } from 'react';
-import FileUpload from '../components/FileUpload';
-import FileList from '../components/FileList';
-import { apiRequest } from '../services/api';
+import React, { useEffect, useState } from "react";
+import { list, getUrl, remove } from "aws-amplify/storage";
+import FileUpload from "../components/FileUpload";
+import FileList from "../components/FileList";
 
 function DashboardPage({ auth }) {
   const [files, setFiles] = useState([]);
@@ -11,52 +10,58 @@ function DashboardPage({ auth }) {
   const fetchFiles = async () => {
     try {
       setLoading(true);
-      const data = await apiRequest('/files', { method: 'GET' }, auth);
-      setFiles(data.files || []);
+
+      const result = await list({
+        path: "public/",
+      });
+
+      setFiles(result.items || []);
     } catch (error) {
-      alert(error.message);
+      console.error(error);
+      alert(error.message || "Failed to load files");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDownload = async (key) => {
+  const handleDownload = async (path) => {
     try {
-      const data = await apiRequest(`/files/download-url?key=${encodeURIComponent(key)}`, { method: 'GET' }, auth);
-      window.open(data.downloadUrl, '_blank');
+      const result = await getUrl({
+        path,
+        options: {
+          expiresIn: 3600,
+        },
+      });
+
+      window.open(result.url.toString(), "_blank");
     } catch (error) {
-      alert(error.message);
+      console.error(error);
+      alert(error.message || "Failed to open file");
     }
   };
 
-  const handleDelete = async (key) => {
+  const handleDelete = async (path) => {
     try {
-      await apiRequest('/files', { method: 'DELETE', body: JSON.stringify({ key }) }, auth);
+      await remove({
+        path,
+      });
+
       fetchFiles();
     } catch (error) {
-      alert(error.message);
+      console.error(error);
+      alert(error.message || "Failed to delete file");
     }
   };
 
-  const handleShare = async (fileId, allowedUser) => {
-    if (!allowedUser.trim()) {
-      alert('Enter the allowed user sub or email first');
-      return;
-    }
-
+  const handleShare = async (path) => {
     try {
-      const data = await apiRequest(
-        '/files/share',
-        {
-          method: 'POST',
-          body: JSON.stringify({ fileId, allowedUsers: [allowedUser.trim()], expiresInHours: 24 }),
-        },
-        auth
-      );
-      await navigator.clipboard.writeText(data.shareLink);
-      alert(`Protected share link copied:\n${data.shareLink}`);
+      const encodedPath = encodeURIComponent(path);
+      const shareLink = `${window.location.origin}/shared/${encodedPath}`;
+      await navigator.clipboard.writeText(shareLink);
+      alert(`Share link copied:\n${shareLink}`);
     } catch (error) {
-      alert(error.message);
+      console.error(error);
+      alert("Failed to copy share link");
     }
   };
 
@@ -69,7 +74,9 @@ function DashboardPage({ auth }) {
       <header className="topbar">
         <div>
           <h1>Cloud File Storage Dashboard</h1>
-          <p className="muted">Upload files to private S3, then create a protected link that requires authentication.</p>
+          <p className="muted">
+            Upload files to S3 and open them from your deployed app.
+          </p>
         </div>
         <button onClick={auth.logout}>Logout</button>
       </header>
@@ -79,13 +86,21 @@ function DashboardPage({ auth }) {
 
         <div className="card">
           <h3>User Info</h3>
-          <p><strong>User:</strong> {auth.userSub || 'Cognito token user'}</p>
-          <p><strong>Email:</strong> {auth.userEmail || 'Not set'}</p>
-          <p className="muted">Shared users must login first. The backend only returns a temporary S3 URL after it confirms the authenticated user is allowed for that share.</p>
+          <p><strong>User:</strong> {auth.userSub || "Authenticated user"}</p>
+          <p><strong>Email:</strong> {auth.userEmail || "Not set"}</p>
+          <p className="muted">
+            Files are now read from Amplify Storage (S3), not from localhost.
+          </p>
         </div>
       </div>
 
-      <FileList files={files} onDownload={handleDownload} onDelete={handleDelete} onShare={handleShare} loading={loading} />
+      <FileList
+        files={files}
+        onDownload={handleDownload}
+        onDelete={handleDelete}
+        onShare={handleShare}
+        loading={loading}
+      />
     </div>
   );
 }

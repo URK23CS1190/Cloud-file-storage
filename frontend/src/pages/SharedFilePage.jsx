@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect, useState } from 'react';
 import { apiRequest } from '../services/api';
+import { uploadData } from 'aws-amplify/storage';
 
 function SharedFilePage({ auth, shareId }) {
   const [loading, setLoading] = useState(true);
