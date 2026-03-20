@@ -1,0 +1,54 @@
+{
+  "auth": {
+    "user_pool_id": "ap-south-1_oepLXbbJh",
+    "aws_region": "ap-south-1",
+    "user_pool_client_id": "79luu8dnjrnidmqdl5dkum1cqq",
+    "identity_pool_id": "ap-south-1:a1ddb6bc-21ed-4fa6-bb8f-fbb50414f878",
+    "mfa_methods": [],
+    "standard_required_attributes": [
+      "email"
+    ],
+    "username_attributes": [
+      "email"
+    ],
+    "user_verification_types": [
+      "email"
+    ],
+    "groups": [],
+    "mfa_configuration": "NONE",
+    "password_policy": {
+      "min_length": 8,
+      "require_lowercase": true,
+      "require_numbers": true,
+      "require_symbols": true,
+      "require_uppercase": true
+    },
+    "unauthenticated_identities_enabled": true
+  },
+  "storage": {
+    "aws_region": "ap-south-1",
+    "bucket_name": "amplify-cloudfilestoragea-filestoragebucket24597ea-bihwmzuak3ut",
+    "buckets": [
+      {
+        "name": "filestorage",
+        "bucket_name": "amplify-cloudfilestoragea-filestoragebucket24597ea-bihwmzuak3ut",
+        "aws_region": "ap-south-1",
+        "paths": {
+          "public/*": {
+            "guest": [
+              "get",
+              "list",
+              "write"
+            ],
+            "authenticated": [
+              "get",
+              "list",
+              "write"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "version": "1.4"
+}

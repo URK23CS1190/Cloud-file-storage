@@ -6,7 +6,7 @@ dist
 # amplify
 node_modules
 .amplify
-amplify_outputs*
+#amplify_outputs*
 amplifyconfiguration*
 .env
 backend/.env
